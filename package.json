@@ -1,0 +1,42 @@
+{
+  "name": "opencode-kvota-panel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenCode Desktop GUI plugin: a quota tab beside Context and a quota item in the session header, with the quotas opencode-quota reports",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bajszi72/opencode-kvota-panel.git"
+  },
+  "homepage": "https://github.com/bajszi72/opencode-kvota-panel#readme",
+  "bugs": {
+    "url": "https://github.com/bajszi72/opencode-kvota-panel/issues"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "quota"
+  ],
+  "type": "module",
+  "exports": {
+    "./gui-experimental": "./gui-experimental.cjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "gui-experimental.cjs",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run typecheck && npm run build"
+  },
+  "devDependencies": {
+    "@opencode/plugin": "2.2.0",
+    "solid-js": "1.9.15",
+    "typescript": "7.0.2",
+    "vite": "7.3.6",
+    "vite-plugin-solid": "2.11.10"
+  }
+}
