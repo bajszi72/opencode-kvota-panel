@@ -13,18 +13,52 @@ The data comes from the server part of [opencode-quota](https://github.com/slkis
 ## Requirements
 
 - OpenCode Desktop **2.2.0** (the version this plugin was built and tested with).
-- [opencode-quota](https://github.com/slkiser/opencode-quota) **6.x**, configured with the providers you use. This panel does not replace that plugin.
-- No build tools or API keys are needed to use the prebuilt download. Provider sign-ins are managed by OpenCode and opencode-quota.
+- [opencode-quota](https://github.com/slkiser/opencode-quota) **6.x**, configured with the providers you use. The installer below installs and globally enables it if it is missing; this panel does not replace it.
+- For automatic installation: **Node.js 22+**, an OpenCode V2 CLI, **Git**, and internet access. No compilation or separate `npm install` is needed. The installer can find the bundled Desktop CLI on macOS, or you can pass `--opencode /path/to/opencode`.
+- Provider sign-ins are managed by OpenCode and opencode-quota. The installer does not sign in to providers or handle API keys.
 
 ## Installation
 
-### From a release (no build required)
+### Automatic installation, including the quota backend (recommended)
 
-Download `opencode-kvota-panel-0.1.0.tgz` from [Releases](https://github.com/bajszi72/opencode-kvota-panel/releases/latest), then run the following in the directory containing the download (macOS/Linux):
+Download and extract `opencode-kvota-panel-0.1.1.tgz` from [Releases](https://github.com/bajszi72/opencode-kvota-panel/releases/latest). In the extracted `package` directory, run:
+
+```bash
+node install.mjs
+```
+
+This explicitly installs **both** global OpenCode plugins using the supported CLI commands:
+
+```bash
+opencode plugin add '@slkiser/opencode-quota@6'
+opencode plugin add 'github:bajszi72/opencode-kvota-panel#v0.1.1'
+```
+
+The installer first checks the active plugin inventory. It keeps an existing compatible backend, as well as any existing panel installation (including a local development checkout), rather than adding duplicate entries or updating them. It backs up existing global JSON/JSONC configuration before changes and delegates configuration edits to OpenCode, preserving comments and unrelated settings. Configured but inactive plugins and incompatible or unverifiable backend versions stop installation with instructions instead of being silently replaced.
+
+The Git-hosted panel includes its prebuilt GUI, so **no build dependencies are installed**. The extracted download is only used to launch the installer; the installed panel lives in OpenCode's package cache. Provider sign-ins still need to be configured separately.
+
+Preview the plan without installing anything:
+
+```bash
+node install.mjs --dry-run
+```
+
+Select a specific CLI if it is not on your PATH:
+
+```bash
+node install.mjs --opencode /path/to/opencode
+```
+
+The installer is an explicit command, not an npm `postinstall` hook. Merely downloading the archive or loading the GUI does not change your configuration. If installation fails after one plugin succeeds, that successful step is kept; the installer does not automatically roll back unrelated configuration. A later run checks the inventory again and installs only what is missing.
+
+### Manual local installation (no build tools required)
+
+Download `opencode-kvota-panel-0.1.1.tgz` from [Releases](https://github.com/bajszi72/opencode-kvota-panel/releases/latest), then run the following in the directory containing the download (macOS/Linux):
 
 ```bash
 mkdir -p "$HOME/.local/share/opencode-plugins/opencode-kvota-panel"
-tar -xzf opencode-kvota-panel-0.1.0.tgz \
+tar -xzf opencode-kvota-panel-0.1.1.tgz \
   -C "$HOME/.local/share/opencode-plugins/opencode-kvota-panel" --strip-components=1
 ```
 
@@ -49,7 +83,7 @@ OpenCode watches its configuration and reloads the plugin after you save. If the
 The repository includes the prebuilt GUI bundle. Clone a release and add the clone's absolute path to the configuration as above:
 
 ```bash
-git clone --branch v0.1.0 https://github.com/bajszi72/opencode-kvota-panel.git
+git clone --branch v0.1.1 https://github.com/bajszi72/opencode-kvota-panel.git
 ```
 
 Avoid configuring both the extracted release and a clone at the same time: they are the same plugin.
@@ -62,14 +96,16 @@ The interface follows the Desktop app's language. It has English and Hungarian t
 
 ```bash
 npm install --legacy-peer-deps
+npm test        # installer tests; no real provider credentials or user configuration are used
 npm run typecheck
-npm run build   # writes gui-experimental.cjs to the directory root; OpenCode loads this file
+npm run bundle  # writes gui-experimental.cjs to the directory root; OpenCode loads this file
 npm run dev     # rebuilds on change; the Desktop app reloads it on its own
-mkdir -p dist
-npm pack --pack-destination dist   # typecheck, build, then dist/opencode-kvota-panel-<version>.tgz
+npm run package # tests, typecheck, bundle, then dist/opencode-kvota-panel-<version>.tgz
 ```
 
-The package holds only the built `gui-experimental.cjs`, `package.json`, the MIT license and this README, not the source. The source is available in this repository. `"private": true` in `package.json` prevents accidental publication to the npm registry; it does not prevent sharing this repository or its release archive.
+There are deliberately no `build`, `prepare`, `prepack` or install lifecycle scripts: npm treats those names as a reason to install development dependencies when consuming a Git package. `bundle` and `package` are explicit maintainer commands; Git consumers receive the committed prebuilt GUI without rebuilding it.
+
+The package holds the built `gui-experimental.cjs`, the dependency-aware `install.mjs`, `package.json`, the MIT license and this README. The GUI source and tests are available in this repository. `"private": true` in `package.json` prevents accidental publication to the npm registry; it does not prevent sharing this repository or its release archive.
 
 The source is in `src/`: `gui.tsx` registers the tab and the header item, `quota.ts` fetches the data, `format.ts` formats it and `view.tsx` renders it.
 

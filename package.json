@@ -1,6 +1,6 @@
 {
   "name": "opencode-kvota-panel",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "OpenCode Desktop GUI plugin: a quota tab beside Context and a quota item in the session header, with the quotas opencode-quota reports",
   "license": "MIT",
@@ -24,13 +24,15 @@
   },
   "files": [
     "gui-experimental.cjs",
+    "install.mjs",
     "LICENSE"
   ],
   "scripts": {
-    "build": "vite build",
+    "bundle": "vite build",
     "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
-    "prepack": "npm run typecheck && npm run build"
+    "test": "node --test test/*.test.mjs",
+    "package": "npm test && npm run typecheck && npm run bundle && node -e \"require('node:fs').mkdirSync('dist',{recursive:true})\" && npm pack --pack-destination dist"
   },
   "devDependencies": {
     "@opencode/plugin": "2.2.0",
